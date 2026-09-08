@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Not Clickbait - Karan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Caveat:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root { --accent: #00f2fe; --primary: #4facfe; --text: #ffffff; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d); /* Deep, vibrant Sunset Gradient */
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; color: var(--text);
+        }
+        @keyframes gradient { 0% {background-position: 0% 50%;} 50% {background-position: 100% 50%;} 100% {background-position: 0% 50%;} }
+        .container {
+            width: 85%; max-width: 400px; padding: 40px 25px; background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px); border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+        }
+        h1 { font-size: 2.2rem; margin-bottom: 10px; line-height: 1.2; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .handwritten { font-family: 'Caveat', cursive; font-size: 3rem; color: var(--accent); display: block; margin-bottom: 10px; }
+        p { font-size: 1.2rem; opacity: 0.9; margin-bottom: 30px; }
+        .pill {
+            width: 100%; padding: 18px; border-radius: 50px; border: none; font-size: 1.2rem; font-weight: 700;
+            cursor: pointer; transition: all 0.3s ease; margin-bottom: 15px;
+        }
+        .yes-btn { background: var(--accent); color: #00334e; box-shadow: 0 10px 20px rgba(0,242,254,0.3); }
+        .no-btn { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.4); }
+        #toast {
+            position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
+            background: #fff; color: #222; padding: 15px 25px; border-radius: 15px;
+            font-weight: bold; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1000; width: 80%;
+        }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div id="page1" class="container">
+        <span class="handwritten">Hey, I'm Karan</span>
+        <h1>And this is not clickbait...</h1>
+        <p>My algorithm (and my gut) says we'd be a great match. What do you think?</p>
+        <button class="pill yes-btn" onclick="nextPage(2)">Ah yeah, I guess</button>
+        <button id="no1" class="pill no-btn" onclick="handleNo(1)">Hard pass</button>
+    </div>
+
+    <div id="page2" class="container hidden">
+        <span class="handwritten">Wait...</span>
+        <h1>Are you sure?</h1>
+        <p>I usually charge for this level of charm, but for you, it's free. Ready to commit?</p>
+        <button class="pill yes-btn" onclick="nextPage(3)">I can't stop laughing already</button>
+        <button id="no2" class="pill no-btn" onclick="handleNo(2)">Oh no, I change my mind</button>
+    </div>
+
+    <div id="page3" class="container hidden">
+        <div style="font-size: 4rem;">🍾🥂</div>
+        <h1 style="color: var(--accent);">IT'S A MATCH!</h1>
+        <p>I’ve already updated my LinkedIn to <strong>'Master Persuader.'</strong><br><br>Glad you chose this without any technical glitches from my side. See you on the app then! 😉</p>
+    </div>
+
+    <div id="toast"></div>
+
+    <script>
+        let noClicks = 0;
+        const toasts = [
+            "⚠️ Error 404: 'Hard Pass' not found in your heart.",
+            "📡 Signal weak! Only accepting positive vibes today.",
+            "🛑 System Error: Button is allergic to rejection.",
+            "🙄 Okay, fine! But that button is literally running away now."
+        ];
+
+        function handleNo(page) {
+            noClicks++;
+            const btn = document.getElementById('no' + page);
+            if (noClicks <= 3) {
+                document.getElementById('toast').innerText = toasts[noClicks - 1];
+                document.getElementById('toast').style.bottom = '40px';
+                setTimeout(() => document.getElementById('toast').style.bottom = '-100px', 2500);
+            } else {
+                btn.style.position = 'fixed';
+                btn.style.left = Math.random() * (window.innerWidth - 150) + 'px';
+                btn.style.top = Math.random() * (window.innerHeight - 80) + 'px';
+            }
+        }
+
+        function nextPage(num) {
+            noClicks = 0;
+            document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
+            document.getElementById('page' + num).classList.remove('hidden');
+            if (num === 3) confetti({ particleCount: 200, spread: 80, origin: { y: 0.6 } });
+        }
+    </script>
+</body>
+</html>
