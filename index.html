@@ -10,7 +10,7 @@
         :root { --accent: #00f2fe; --primary: #4facfe; --text: #ffffff; }
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d); /* Deep, vibrant Sunset Gradient */
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
             background-size: 400% 400%;
             animation: gradient 15s ease infinite;
             margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; color: var(--text);
@@ -29,11 +29,11 @@
             cursor: pointer; transition: all 0.3s ease; margin-bottom: 15px;
         }
         .yes-btn { background: var(--accent); color: #00334e; box-shadow: 0 10px 20px rgba(0,242,254,0.3); }
-        .no-btn { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.4); }
+        .no-btn { background: rgba(255,255,255,0.15); color: #fff; border: 1px solid rgba(255,255,255,0.4); z-index: 1000; }
         #toast {
             position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%);
             background: #fff; color: #222; padding: 15px 25px; border-radius: 15px;
-            font-weight: bold; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 1000; width: 80%;
+            font-weight: bold; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 2000; width: 80%;
         }
         .hidden { display: none !important; }
     </style>
@@ -69,23 +69,59 @@
         const toasts = [
             "⚠️ Error 404: 'Hard Pass' not found in your heart.",
             "📡 Signal weak! Only accepting positive vibes today.",
-            "🛑 System Error: Button is allergic to rejection.",
-            "🙄 Okay, fine! But that button is literally running away now."
+            "🛑 System Error: This button is now strictly off-limits."
         ];
 
+        function moveButton(btn) {
+            const x = Math.random() * (window.innerWidth - 150);
+            const y = Math.random() * (window.innerHeight - 80);
+            btn.style.position = 'fixed';
+            btn.style.left = x + 'px';
+            btn.style.top = y + 'px';
+        }
+
+        function showToast(text) {
+            const t = document.getElementById('toast');
+            t.innerText = text;
+            t.style.bottom = '40px';
+            setTimeout(() => t.style.bottom = '-100px', 2500);
+        }
+
         function handleNo(page) {
-            noClicks++;
             const btn = document.getElementById('no' + page);
-            if (noClicks <= 3) {
-                document.getElementById('toast').innerText = toasts[noClicks - 1];
-                document.getElementById('toast').style.bottom = '40px';
-                setTimeout(() => document.getElementById('toast').style.bottom = '-100px', 2500);
+            
+            // If they managed to click it while it was moving (or on the first 2 clicks)
+            noClicks++;
+            
+            if (noClicks <= 2) {
+                showToast(toasts[noClicks - 1]);
             } else {
-                btn.style.position = 'fixed';
-                btn.style.left = Math.random() * (window.innerWidth - 150) + 'px';
-                btn.style.top = Math.random() * (window.innerHeight - 80) + 'px';
+                moveButton(btn);
             }
         }
+
+        // The "Genius" Part: Move BEFORE the click
+        function setupRunaway(btnId) {
+            const btn = document.getElementById(btnId);
+            
+            // For Desktop (Hover)
+            btn.addEventListener('mouseenter', () => {
+                if (noClicks >= 2) moveButton(btn);
+            });
+
+            // For Mobile (Touch)
+            btn.addEventListener('touchstart', (e) => {
+                if (noClicks >= 2) {
+                    e.preventDefault(); // Stop the click from happening
+                    showToast(toasts[2]);
+                    moveButton(btn);
+                }
+            });
+        }
+
+        // Initialize the logic for both "No" buttons
+        setupRunaway('no1');
+        setupRunaway('no2');
 
         function nextPage(num) {
             noClicks = 0;
