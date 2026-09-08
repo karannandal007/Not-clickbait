@@ -81,15 +81,16 @@
             setTimeout(() => t.style.bottom = '-100px', 2500);
         }
 
-        // Restricts movement to the center 70% of the screen
+        // Logic to keep the button in the upper 60% of the screen
         function moveButton(btn) {
-            const paddingX = window.innerWidth * 0.15; // 15% margin on left/right
-            const paddingY = window.innerHeight * 0.15; // 15% margin on top/bottom
+            const paddingX = window.innerWidth * 0.15; // 15% side margins
+            const topMargin = window.innerHeight * 0.10; // 10% top margin
+            const bottomMargin = window.innerHeight * 0.40; // 40% bottom margin (Toast clearance)
             
             const minX = paddingX;
             const maxX = window.innerWidth - paddingX - btn.offsetWidth;
-            const minY = paddingY;
-            const maxY = window.innerHeight - paddingY - btn.offsetHeight;
+            const minY = topMargin;
+            const maxY = window.innerHeight - bottomMargin - btn.offsetHeight;
 
             const x = Math.random() * (maxX - minX) + minX;
             const y = Math.random() * (maxY - minY) + minY;
