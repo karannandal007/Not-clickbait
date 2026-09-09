@@ -9,7 +9,8 @@
     <style>
         :root {
             --accent: #00f2fe;
-            --text: #ffffff;
+            --text-heading: #fef08a; /* Warm champagne gold */
+            --text-body: #fef3c7;    /* Soft warm cream */
         }
 
         * {
@@ -29,7 +30,6 @@
             align-items: center;
             height: 100vh;
             overflow: hidden;
-            color: var(--text);
             touch-action: manipulation;
         }
 
@@ -58,6 +58,8 @@
             margin: 0 0 10px 0;
             line-height: 1.2;
             font-weight: 700;
+            color: var(--text-heading);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
         }
 
         .handwritten {
@@ -66,13 +68,16 @@
             color: var(--accent);
             display: block;
             margin-bottom: 8px;
+            text-shadow: 0 2px 10px rgba(0, 242, 254, 0.3);
         }
 
         p {
             font-size: 0.95rem;
-            opacity: 0.9;
+            color: var(--text-body);
+            opacity: 0.92;
             margin: 0 0 28px 0;
             line-height: 1.5;
+            font-weight: 500;
         }
 
         .pill {
@@ -108,7 +113,7 @@
         /* Colored state for the first click */
         .no-btn-colored { 
             background: linear-gradient(135deg, #f43f5e, #db2777); 
-            color: #fff; 
+            color: #ffffff; 
             border: 1px solid rgba(255, 255, 255, 0.35); 
             box-shadow: 0 8px 20px rgba(244, 63, 94, 0.4);
             position: relative; 
@@ -119,26 +124,26 @@
             filter: brightness(1.1);
         }
 
-        /* Transparent state after first click / when evading */
-        .no-btn-transparent { 
-            background: transparent !important; 
-            color: rgba(255, 255, 255, 0.95) !important; 
-            border: 1px solid rgba(255, 255, 255, 0.45) !important; 
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35) !important;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+        /* Evasive State: High-contrast cyan outline + dark frosted shield */
+        .no-btn-evasive { 
+            background: rgba(10, 15, 30, 0.85) !important; 
+            color: var(--accent) !important; 
+            border: 2px solid var(--accent) !important; 
+            box-shadow: 0 0 20px rgba(0, 242, 254, 0.45), 0 12px 30px rgba(0, 0, 0, 0.7) !important;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             position: fixed !important; 
             z-index: 90 !important;
             transition: left 0.18s ease-out, top 0.18s ease-out, background 0.2s ease;
         }
 
-        .no-btn-transparent:hover {
-            background: rgba(255, 255, 255, 0.15) !important;
+        .no-btn-evasive:hover {
+            background: rgba(15, 23, 42, 0.95) !important;
         }
 
         .reset-btn {
             background: rgba(255, 255, 255, 0.1);
-            color: #fff;
+            color: var(--text-heading);
             border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 50px;
             padding: 10px 22px;
@@ -191,7 +196,7 @@
     <div id="page2" class="container hidden">
         <span class="handwritten">Wait...</span>
         <h1>Are you sure?</h1>
-        <p>I usually charge for this level of charm, but for you, it's a <b>free trial</b>. Ready to see if the algorithm was right?</p>
+        <p>I usually charge for this level of charm, but for you, it's a <b style="color: #fde047; text-decoration: underline;">free trial</b>. Ready to see if the algorithm was right?</p>
         <button class="pill yes-btn" onclick="nextPage(3)">I can't stop laughing already</button>
         <button id="no2" class="pill no-btn-colored" onclick="handleNoClick(2)">Oh no, I change my mind</button>
     </div>
@@ -199,7 +204,7 @@
     <div id="page3" class="container hidden">
         <div style="font-size: 3.8rem; margin-bottom: 10px;">🍾🥂</div>
         <h1 style="color: var(--accent);">IT'S A MATCH!</h1>
-        <p>I’ve already updated my LinkedIn to <strong>'Master Persuader.'</strong><br><br>Glad you chose this without any technical glitches from my side. See you on the app then! 😉</p>
+        <p>I’ve already updated my LinkedIn to <strong style="color: #fde047;">'Master Persuader.'</strong><br><br>Glad you chose this without any technical glitches from my side. See you on the app then! 😉</p>
         <button class="reset-btn" onclick="nextPage(1)">↺ Try again from the start</button>
     </div>
 
@@ -243,7 +248,7 @@
             const minY = window.innerHeight * 0.12;
             const maxY = Math.max(minY + 20, window.innerHeight * 0.50);
 
-            // Minimum displacement so the movement is dramatic and unmistakable
+            // Minimum displacement so movement is unmistakable
             const minDistance = Math.min(260, Math.max(160, window.innerWidth * 0.35));
 
             const isCurrentlyLeft = currX < (minX + maxX) / 2;
@@ -255,7 +260,6 @@
             let bestDist = -1;
 
             for (let i = 0; i < 25; i++) {
-                // Bias candidates to the opposite horizontal half for an obvious jump
                 const pickOpposite = i < 18;
                 const xRangeMin = pickOpposite ? targetHalfMinX : minX;
                 const xRangeMax = pickOpposite ? targetHalfMaxX : maxX;
@@ -278,9 +282,9 @@
                 }
             }
 
-            // Switch class to transparent
+            // Switch class to high-contrast evasive styling with outline
             btn.classList.remove('no-btn-colored');
-            btn.classList.add('no-btn-transparent');
+            btn.classList.add('no-btn-evasive');
 
             btn.style.width = btnWidth + 'px';
             btn.style.left = bestX + 'px';
@@ -305,7 +309,7 @@
                 }
             });
 
-            // Touch (Mobile): Dodges on touch before click registers
+            // Touch (Mobile): Dodges on touch before click completes
             btn.addEventListener('touchstart', (e) => {
                 if (noClicks >= 1) {
                     e.preventDefault(); 
@@ -322,7 +326,7 @@
         function resetBtnState(btnId) {
             const btn = document.getElementById(btnId);
             if (btn) {
-                btn.classList.remove('no-btn-transparent');
+                btn.classList.remove('no-btn-evasive');
                 btn.classList.add('no-btn-colored');
                 btn.style.position = 'relative';
                 btn.style.width = '100%';
