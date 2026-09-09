@@ -4,55 +4,162 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>Not Clickbait - Karan</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700&family=Caveat:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Caveat:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        :root { --accent: #00f2fe; --primary: #4facfe; --text: #ffffff; }
+        :root {
+            --accent: #00f2fe;
+            --primary: #4facfe;
+            --text: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
             background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
             background-size: 400% 400%;
             animation: gradient 15s ease infinite;
-            margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; color: var(--text);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            color: var(--text);
             touch-action: manipulation;
         }
-        @keyframes gradient { 0% {background-position: 0% 50%;} 50% {background-position: 100% 50%;} 100% {background-position: 0% 50%;} }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
         
         .container {
-            width: 85%; max-width: 380px; padding: 40px 20px; background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(20px); border-radius: 30px; border: 1px solid rgba(255, 255, 255, 0.2);
-            text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.4);
+            width: 85%;
+            max-width: 380px;
+            padding: 40px 24px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
             z-index: 1;
+            transition: transform 0.3s ease, opacity 0.3s ease;
         }
 
-        h1 { font-size: 1.8rem; margin-bottom: 10px; line-height: 1.2; }
-        .handwritten { font-family: 'Caveat', cursive; font-size: 2.8rem; color: var(--accent); display: block; margin-bottom: 10px; }
-        p { font-size: 1rem; opacity: 0.9; margin-bottom: 30px; line-height: 1.4; }
+        h1 {
+            font-size: 1.8rem;
+            margin: 0 0 10px 0;
+            line-height: 1.2;
+            font-weight: 700;
+        }
+
+        .handwritten {
+            font-family: 'Caveat', cursive;
+            font-size: 2.8rem;
+            color: var(--accent);
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        p {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            margin: 0 0 28px 0;
+            line-height: 1.5;
+        }
 
         .pill {
-            width: 100%; padding: 16px; border-radius: 50px; border: none; font-size: 1.1rem; font-weight: 700;
-            cursor: pointer; transition: all 0.2s ease; margin-bottom: 15px;
-            display: block; -webkit-tap-highlight-color: transparent;
+            width: 100%;
+            padding: 16px;
+            border-radius: 50px;
+            border: none;
+            font-size: 1.05rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease;
+            margin-bottom: 14px;
+            display: block;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .yes-btn { background: var(--accent); color: #00334e; box-shadow: 0 10px 20px rgba(0,242,254,0.3); position: relative; z-index: 5; }
+        .pill:active {
+            transform: scale(0.97);
+        }
+
+        .yes-btn {
+            background: var(--accent);
+            color: #00334e;
+            box-shadow: 0 10px 20px rgba(0, 242, 254, 0.3);
+            position: relative;
+            z-index: 5;
+        }
+
+        .yes-btn:hover {
+            filter: brightness(1.05);
+        }
         
-        /* The No button starts relative but moves to Fixed */
         .no-btn { 
-            background: rgba(255,255,255,0.15); 
+            background: rgba(255, 255, 255, 0.15); 
             color: #fff; 
-            border: 1px solid rgba(255,255,255,0.4); 
+            border: 1px solid rgba(255, 255, 255, 0.4); 
             position: relative; 
-            z-index: 100; /* Stays above the card but below the toast */
+            z-index: 100;
+            transition: left 0.15s ease-out, top 0.15s ease-out, background 0.2s;
+        }
+
+        .no-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .reset-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            padding: 10px 22px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .reset-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
 
         #toast {
-            position: fixed; bottom: -120px; left: 50%; transform: translateX(-50%);
-            background: #ffffff; color: #111; padding: 18px 25px; border-radius: 20px;
-            font-weight: 800; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            z-index: 9999; width: 85%; text-align: center; box-shadow: 0 -10px 30px rgba(0,0,0,0.2);
+            position: fixed;
+            bottom: -120px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffffff;
+            color: #111;
+            padding: 16px 22px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.92rem;
+            transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            z-index: 9999;
+            width: 85%;
+            max-width: 360px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
         }
-        .hidden { display: none !important; }
+
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -74,87 +181,111 @@
     </div>
 
     <div id="page3" class="container hidden">
-        <div style="font-size: 4rem;">🍾🥂</div>
+        <div style="font-size: 3.8rem; margin-bottom: 10px;">🍾🥂</div>
         <h1 style="color: var(--accent);">IT'S A MATCH!</h1>
         <p>I’ve already updated my LinkedIn to <strong>'Master Persuader.'</strong><br><br>Glad you chose this without any technical glitches from my side. See you on the app then! 😉</p>
+        <button class="reset-btn" onclick="nextPage(1)">↺ Try again from the start</button>
     </div>
 
     <div id="toast"></div>
 
     <script>
         let noClicks = 0;
+        let toastIndex = 0;
+        let toastTimer = null;
+
         const toasts = [
             "⚠️ Error 404: 'Hard Pass' not found in your heart.",
-            "📡 Signal weak! Only accepting positive vibes today.",
-            "🛑 System Error: This button is now strictly off-limits."
+            "📡 403 Forbidden: Algorithm detected high chemistry. Access denied.",
+            "🤖 Recalibrating: Our neural net confirms you definitely meant 'Yes'.",
+            "🛑 Critical Alert: The 'No' button is experiencing severe commitment issues."
         ];
 
-        function showToast(text) {
+        function showNextToast() {
+            const toastMsg = toasts[toastIndex % toasts.length];
+            toastIndex++;
+
             const t = document.getElementById('toast');
-            t.innerText = text;
-            t.style.bottom = '50px'; // Higher up to avoid browser bars
-            setTimeout(() => t.style.bottom = '-120px', 2500);
+            t.innerText = toastMsg;
+            t.style.bottom = '50px';
+
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                t.style.bottom = '-120px';
+            }, 2500);
         }
 
         function moveButton(btn) {
-            // SAFE ZONE CALCULATION:
-            // Horizontal: 5% to 95% of width
-            // Vertical: 15% to 45% of height (Upper half only)
-            
-            const btnWidth = btn.offsetWidth;
-            const btnHeight = btn.offsetHeight;
+            // Measure before changing position to prevent collapsing
+            const btnWidth = btn.offsetWidth || 280;
+            const btnHeight = btn.offsetHeight || 50;
 
             const minX = window.innerWidth * 0.05;
-            const maxX = window.innerWidth * 0.95 - btnWidth;
+            const maxX = Math.max(minX + 20, window.innerWidth * 0.95 - btnWidth);
             
             const minY = window.innerHeight * 0.15;
-            const maxY = window.innerHeight * 0.45;
+            const maxY = Math.max(minY + 20, window.innerHeight * 0.45);
 
             const randomX = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
             const randomY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
 
             btn.style.position = 'fixed';
-            btn.style.width = btnWidth + 'px'; // Keep original width
+            btn.style.width = btnWidth + 'px';
             btn.style.left = randomX + 'px';
             btn.style.top = randomY + 'px';
         }
 
         function handleNoClick(pageNum) {
             const btn = document.getElementById('no' + pageNum);
-            if (noClicks < 2) {
-                noClicks++;
-                showToast(toasts[noClicks - 1]);
-            } else {
-                moveButton(btn);
-            }
+            noClicks++;
+            showNextToast();
+            moveButton(btn);
         }
 
         function setupInteraction(btnId) {
             const btn = document.getElementById(btnId);
             
-            // Hover (Desktop)
+            // Hover (Desktop): Dodges immediately once clicked at least once
             btn.addEventListener('mouseover', () => { 
-                if (noClicks >= 2) moveButton(btn); 
-            });
-
-            // Touch (Mobile) - triggers BEFORE the tap completes
-            btn.addEventListener('touchstart', (e) => {
-                if (noClicks >= 2) {
-                    e.preventDefault(); 
-                    e.stopImmediatePropagation();
-                    showToast(toasts[2]);
+                if (noClicks >= 1) {
+                    showNextToast();
                     moveButton(btn);
                 }
-            }, {passive: false});
+            });
+
+            // Touch (Mobile): Dodges on touch before click registers
+            btn.addEventListener('touchstart', (e) => {
+                if (noClicks >= 1) {
+                    e.preventDefault(); 
+                    e.stopImmediatePropagation();
+                    showNextToast();
+                    moveButton(btn);
+                }
+            }, { passive: false });
         }
 
         setupInteraction('no1');
         setupInteraction('no2');
 
+        function resetBtnState(btnId) {
+            const btn = document.getElementById(btnId);
+            if (btn) {
+                btn.style.position = 'relative';
+                btn.style.width = '100%';
+                btn.style.left = 'auto';
+                btn.style.top = 'auto';
+            }
+        }
+
         function nextPage(num) {
             noClicks = 0;
+            toastIndex = 0;
+            resetBtnState('no1');
+            resetBtnState('no2');
+
             document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
             document.getElementById('page' + num).classList.remove('hidden');
+
             if (num === 3) {
                 confetti({ 
                     particleCount: 150, 
