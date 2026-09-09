@@ -146,23 +146,6 @@
             border-color: #ff4477 !important;
         }
 
-        .reset-btn {
-            background: rgba(255, 255, 255, 0.1);
-            color: var(--text-heading);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50px;
-            padding: 10px 22px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 10px;
-            transition: background 0.2s;
-        }
-
-        .reset-btn:hover {
-            background: rgba(255, 255, 255, 0.2);
-        }
-
         #toast {
             position: fixed;
             bottom: -120px;
@@ -207,10 +190,9 @@
     </div>
 
     <div id="page3" class="container hidden">
-        <div style="font-size: 3.8rem; margin-bottom: 10px;">🍾🥂</div>
+        <div style="font-size: 3.8rem; margin-bottom: 12px;">🍾🥂</div>
         <h1 style="color: var(--accent-positive);">IT'S A MATCH!</h1>
         <p>I’ve already updated my LinkedIn to <strong style="color: #fde047;">'Master Persuader.'</strong><br><br>Glad you chose this without any technical glitches from my side. See you on the app then! 😉</p>
-        <button class="reset-btn" onclick="nextPage(1)">↺ Try again from the start</button>
     </div>
 
     <div id="toast"></div>
@@ -249,73 +231,58 @@
             const currX = rect.left;
             const currY = rect.top;
 
-            // Target the preferred selection ("Yes" button) to avoid
+            // Target the preferred selection ("Yes" button) to strictly avoid
             const yesBtn = document.getElementById('yes' + currentPageNum);
             const yesRect = yesBtn ? yesBtn.getBoundingClientRect() : null;
 
-            const safetyBuffer = 30;
-            const avoidBox = yesRect ? {
-                left: yesRect.left - safetyBuffer,
-                right: yesRect.right + safetyBuffer,
-                top: yesRect.top - safetyBuffer,
-                bottom: yesRect.bottom + safetyBuffer
-            } : null;
+            const minX = Math.max(16, window.innerWidth * 0.05);
+            const maxX = Math.max(minX + 20, window.innerWidth * 0.95 - btnWidth);
+
+            // Guardrails: Keep in upper zone, strictly above Yes button, and far from bottom rail & toast
+            const minY = Math.max(20, window.innerHeight * 0.08);
+            const upperLimitAboveYes = yesRect ? (yesRect.top - btnHeight - 24) : (window.innerHeight * 0.45);
+            const maxY = Math.max(minY + 20, Math.min(window.innerHeight * 0.46, upperLimitAboveYes));
 
             function collidesWithYes(x, y) {
-                if (!avoidBox) return false;
+                if (!yesRect) return false;
+                const buffer = 24;
                 return (
-                    x < avoidBox.right &&
-                    x + btnWidth > avoidBox.left &&
-                    y < avoidBox.bottom &&
-                    y + btnHeight > avoidBox.top
+                    x < yesRect.right + buffer &&
+                    x + btnWidth > yesRect.left - buffer &&
+                    y < yesRect.bottom + buffer &&
+                    y + btnHeight > yesRect.top - buffer
                 );
             }
 
-            const minX = window.innerWidth * 0.05;
-            const maxX = Math.max(minX + 20, window.innerWidth * 0.95 - btnWidth);
+            function isInsideSafeZone(x, y) {
+                if (x < minX || x > maxX) return false;
+                if (y < minY) return false;
+                // Exclude bottom phone navigation rail & error toast zone
+                if (y + btnHeight > window.innerHeight - 180 || y + btnHeight > window.innerHeight * 0.52) return false;
+                // Exclude preferred selection
+                if (collidesWithYes(x, y)) return false;
+                return true;
+            }
 
-            const upperMinY = Math.max(15, window.innerHeight * 0.06);
-            const upperMaxY = yesRect
-                ? Math.max(upperMinY, yesRect.top - btnHeight - safetyBuffer)
-                : window.innerHeight * 0.38;
-
-            const lowerMinY = yesRect
-                ? yesRect.bottom + safetyBuffer
-                : window.innerHeight * 0.65;
-            const lowerMaxY = Math.max(lowerMinY, Math.min(window.innerHeight - btnHeight - 85, window.innerHeight * 0.88));
-
-            const canUseUpper = upperMaxY > upperMinY + 10;
-            const canUseLower = lowerMaxY > lowerMinY + 10;
-
-            const minDistance = Math.min(260, Math.max(150, window.innerWidth * 0.32));
+            const minDistance = Math.min(260, Math.max(140, window.innerWidth * 0.32));
 
             const isCurrentlyLeft = currX < (minX + maxX) / 2;
             const targetHalfMinX = isCurrentlyLeft ? (minX + maxX) / 2 : minX;
             const targetHalfMaxX = isCurrentlyLeft ? maxX : (minX + maxX) / 2;
 
-            let bestX = minX;
-            let bestY = upperMinY;
+            let bestX = isCurrentlyLeft ? maxX : minX;
+            let bestY = minY;
             let bestDist = -1;
-            let foundNonColliding = false;
+            let foundValid = false;
 
             for (let i = 0; i < 40; i++) {
                 const pickOpposite = i < 28;
                 const xRangeMin = pickOpposite ? targetHalfMinX : minX;
                 const xRangeMax = pickOpposite ? targetHalfMaxX : maxX;
                 const candX = Math.floor(Math.random() * (xRangeMax - xRangeMin + 1)) + xRangeMin;
+                const candY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
 
-                let candY = upperMinY;
-                if (canUseUpper && canUseLower) {
-                    candY = Math.random() > 0.5
-                        ? Math.floor(Math.random() * (upperMaxY - upperMinY + 1)) + upperMinY
-                        : Math.floor(Math.random() * (lowerMaxY - lowerMinY + 1)) + lowerMinY;
-                } else if (canUseUpper) {
-                    candY = Math.floor(Math.random() * (upperMaxY - upperMinY + 1)) + upperMinY;
-                } else if (canUseLower) {
-                    candY = Math.floor(Math.random() * (lowerMaxY - lowerMinY + 1)) + lowerMinY;
-                }
-
-                if (collidesWithYes(candX, candY)) {
+                if (!isInsideSafeZone(candX, candY)) {
                     continue;
                 }
 
@@ -325,21 +292,21 @@
                     bestX = candX;
                     bestY = candY;
                     bestDist = dist;
-                    foundNonColliding = true;
+                    foundValid = true;
                     break;
                 }
 
-                if (!foundNonColliding || dist > bestDist) {
+                if (!foundValid || dist > bestDist) {
                     bestDist = dist;
                     bestX = candX;
                     bestY = candY;
-                    foundNonColliding = true;
+                    foundValid = true;
                 }
             }
 
-            if (!foundNonColliding) {
+            if (!foundValid) {
                 bestX = isCurrentlyLeft ? maxX : minX;
-                bestY = canUseUpper ? upperMinY : (canUseLower ? lowerMinY : 20);
+                bestY = minY;
             }
 
             // Switch to negative evasive styling
@@ -361,6 +328,7 @@
         function setupInteraction(btnId) {
             const btn = document.getElementById(btnId);
             
+            // Hover (Desktop): Dodges preemptively after 1st click
             btn.addEventListener('mouseover', () => { 
                 if (noClicks >= 1) {
                     showNextToast();
@@ -368,6 +336,7 @@
                 }
             });
 
+            // Touch (Mobile): Dodges on touch before click completes
             btn.addEventListener('touchstart', (e) => {
                 if (noClicks >= 1) {
                     e.preventDefault(); 
