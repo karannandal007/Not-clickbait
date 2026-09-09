@@ -9,7 +9,6 @@
     <style>
         :root {
             --accent: #00f2fe;
-            --primary: #4facfe;
             --text: #ffffff;
         }
 
@@ -52,7 +51,6 @@
             text-align: center;
             box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
             z-index: 1;
-            transition: transform 0.3s ease, opacity 0.3s ease;
         }
 
         h1 {
@@ -81,23 +79,23 @@
             width: 100%;
             padding: 16px;
             border-radius: 50px;
-            border: none;
             font-size: 1.05rem;
             font-weight: 700;
             cursor: pointer;
-            transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease;
+            transition: all 0.2s ease;
             margin-bottom: 14px;
             display: block;
             -webkit-tap-highlight-color: transparent;
         }
 
         .pill:active {
-            transform: scale(0.97);
+            transform: scale(0.96);
         }
 
         .yes-btn {
             background: var(--accent);
             color: #00334e;
+            border: none;
             box-shadow: 0 10px 20px rgba(0, 242, 254, 0.3);
             position: relative;
             z-index: 5;
@@ -107,17 +105,35 @@
             filter: brightness(1.05);
         }
         
-        .no-btn { 
-            background: rgba(255, 255, 255, 0.15); 
+        /* Colored state for the first click */
+        .no-btn-colored { 
+            background: linear-gradient(135deg, #f43f5e, #db2777); 
             color: #fff; 
-            border: 1px solid rgba(255, 255, 255, 0.4); 
+            border: 1px solid rgba(255, 255, 255, 0.35); 
+            box-shadow: 0 8px 20px rgba(244, 63, 94, 0.4);
             position: relative; 
-            z-index: 100;
-            transition: left 0.15s ease-out, top 0.15s ease-out, background 0.2s;
+            z-index: 10;
         }
 
-        .no-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
+        .no-btn-colored:hover {
+            filter: brightness(1.1);
+        }
+
+        /* Transparent state after first click / when evading */
+        .no-btn-transparent { 
+            background: transparent !important; 
+            color: rgba(255, 255, 255, 0.95) !important; 
+            border: 1px solid rgba(255, 255, 255, 0.45) !important; 
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35) !important;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            position: fixed !important; 
+            z-index: 90 !important;
+            transition: left 0.18s ease-out, top 0.18s ease-out, background 0.2s ease;
+        }
+
+        .no-btn-transparent:hover {
+            background: rgba(255, 255, 255, 0.15) !important;
         }
 
         .reset-btn {
@@ -169,7 +185,7 @@
         <h1>And this is not clickbait...</h1>
         <p>My algorithm (and my gut) says we'd be a great match. What do you think?</p>
         <button class="pill yes-btn" onclick="nextPage(2)">Ah yeah, I guess</button>
-        <button id="no1" class="pill no-btn" onclick="handleNoClick(1)">Hard pass</button>
+        <button id="no1" class="pill no-btn-colored" onclick="handleNoClick(1)">Hard pass</button>
     </div>
 
     <div id="page2" class="container hidden">
@@ -177,7 +193,7 @@
         <h1>Are you sure?</h1>
         <p>I usually charge for this level of charm, but for you, it's a <b>free trial</b>. Ready to see if the algorithm was right?</p>
         <button class="pill yes-btn" onclick="nextPage(3)">I can't stop laughing already</button>
-        <button id="no2" class="pill no-btn" onclick="handleNoClick(2)">Oh no, I change my mind</button>
+        <button id="no2" class="pill no-btn-colored" onclick="handleNoClick(2)">Oh no, I change my mind</button>
     </div>
 
     <div id="page3" class="container hidden">
@@ -216,23 +232,59 @@
         }
 
         function moveButton(btn) {
-            // Measure before changing position to prevent collapsing
             const btnWidth = btn.offsetWidth || 280;
-            const btnHeight = btn.offsetHeight || 50;
+            const rect = btn.getBoundingClientRect();
+            const currX = rect.left;
+            const currY = rect.top;
 
             const minX = window.innerWidth * 0.05;
             const maxX = Math.max(minX + 20, window.innerWidth * 0.95 - btnWidth);
             
-            const minY = window.innerHeight * 0.15;
-            const maxY = Math.max(minY + 20, window.innerHeight * 0.45);
+            const minY = window.innerHeight * 0.12;
+            const maxY = Math.max(minY + 20, window.innerHeight * 0.50);
 
-            const randomX = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
-            const randomY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
+            // Minimum displacement so the movement is dramatic and unmistakable
+            const minDistance = Math.min(260, Math.max(160, window.innerWidth * 0.35));
 
-            btn.style.position = 'fixed';
+            const isCurrentlyLeft = currX < (minX + maxX) / 2;
+            const targetHalfMinX = isCurrentlyLeft ? (minX + maxX) / 2 : minX;
+            const targetHalfMaxX = isCurrentlyLeft ? maxX : (minX + maxX) / 2;
+
+            let bestX = minX;
+            let bestY = minY;
+            let bestDist = -1;
+
+            for (let i = 0; i < 25; i++) {
+                // Bias candidates to the opposite horizontal half for an obvious jump
+                const pickOpposite = i < 18;
+                const xRangeMin = pickOpposite ? targetHalfMinX : minX;
+                const xRangeMax = pickOpposite ? targetHalfMaxX : maxX;
+
+                const candX = Math.floor(Math.random() * (xRangeMax - xRangeMin + 1)) + xRangeMin;
+                const candY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
+                const dist = Math.hypot(candX - currX, candY - currY);
+
+                if (dist >= minDistance) {
+                    bestX = candX;
+                    bestY = candY;
+                    bestDist = dist;
+                    break;
+                }
+
+                if (dist > bestDist) {
+                    bestDist = dist;
+                    bestX = candX;
+                    bestY = candY;
+                }
+            }
+
+            // Switch class to transparent
+            btn.classList.remove('no-btn-colored');
+            btn.classList.add('no-btn-transparent');
+
             btn.style.width = btnWidth + 'px';
-            btn.style.left = randomX + 'px';
-            btn.style.top = randomY + 'px';
+            btn.style.left = bestX + 'px';
+            btn.style.top = bestY + 'px';
         }
 
         function handleNoClick(pageNum) {
@@ -245,7 +297,7 @@
         function setupInteraction(btnId) {
             const btn = document.getElementById(btnId);
             
-            // Hover (Desktop): Dodges immediately once clicked at least once
+            // Hover (Desktop): Dodges preemptively after 1st click
             btn.addEventListener('mouseover', () => { 
                 if (noClicks >= 1) {
                     showNextToast();
@@ -270,6 +322,8 @@
         function resetBtnState(btnId) {
             const btn = document.getElementById(btnId);
             if (btn) {
+                btn.classList.remove('no-btn-transparent');
+                btn.classList.add('no-btn-colored');
                 btn.style.position = 'relative';
                 btn.style.width = '100%';
                 btn.style.left = 'auto';
