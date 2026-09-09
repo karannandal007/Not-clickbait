@@ -189,7 +189,7 @@
         <span class="handwritten">Hey, I'm Karan</span>
         <h1>And this is not clickbait...</h1>
         <p>My algorithm (and my gut) says we'd be a great match. What do you think?</p>
-        <button class="pill yes-btn" onclick="nextPage(2)">Ah yeah, I guess</button>
+        <button id="yes1" class="pill yes-btn" onclick="nextPage(2)">Ah yeah, I guess</button>
         <button id="no1" class="pill no-btn-colored" onclick="handleNoClick(1)">Hard pass</button>
     </div>
 
@@ -197,7 +197,7 @@
         <span class="handwritten">Wait...</span>
         <h1>Are you sure?</h1>
         <p>I usually charge for this level of charm, but for you, it's a <b style="color: #fde047; text-decoration: underline;">free trial</b>. Ready to see if the algorithm was right?</p>
-        <button class="pill yes-btn" onclick="nextPage(3)">I can't stop laughing already</button>
+        <button id="yes2" class="pill yes-btn" onclick="nextPage(3)">I can't stop laughing already</button>
         <button id="no2" class="pill no-btn-colored" onclick="handleNoClick(2)">Oh no, I change my mind</button>
     </div>
 
@@ -214,6 +214,7 @@
         let noClicks = 0;
         let toastIndex = 0;
         let toastTimer = null;
+        let currentPageNum = 1;
 
         const toasts = [
             "⚠️ Error 404: 'Hard Pass' not found in your heart.",
@@ -238,51 +239,107 @@
 
         function moveButton(btn) {
             const btnWidth = btn.offsetWidth || 280;
+            const btnHeight = btn.offsetHeight || 56;
             const rect = btn.getBoundingClientRect();
             const currX = rect.left;
             const currY = rect.top;
 
+            // Target the preferred selection ("Yes" button) to avoid
+            const yesBtn = document.getElementById('yes' + currentPageNum);
+            const yesRect = yesBtn ? yesBtn.getBoundingClientRect() : null;
+
+            const safetyBuffer = 30; // Margin around the Yes button
+            const avoidBox = yesRect ? {
+                left: yesRect.left - safetyBuffer,
+                right: yesRect.right + safetyBuffer,
+                top: yesRect.top - safetyBuffer,
+                bottom: yesRect.bottom + safetyBuffer
+            } : null;
+
+            function collidesWithYes(x, y) {
+                if (!avoidBox) return false;
+                return (
+                    x < avoidBox.right &&
+                    x + btnWidth > avoidBox.left &&
+                    y < avoidBox.bottom &&
+                    y + btnHeight > avoidBox.top
+                );
+            }
+
             const minX = window.innerWidth * 0.05;
             const maxX = Math.max(minX + 20, window.innerWidth * 0.95 - btnWidth);
-            
-            const minY = window.innerHeight * 0.12;
-            const maxY = Math.max(minY + 20, window.innerHeight * 0.50);
 
-            // Minimum displacement so movement is unmistakable
-            const minDistance = Math.min(260, Math.max(160, window.innerWidth * 0.35));
+            // Upper and lower vertical corridors strictly clear of the Yes button
+            const upperMinY = Math.max(15, window.innerHeight * 0.06);
+            const upperMaxY = yesRect
+                ? Math.max(upperMinY, yesRect.top - btnHeight - safetyBuffer)
+                : window.innerHeight * 0.38;
+
+            const lowerMinY = yesRect
+                ? yesRect.bottom + safetyBuffer
+                : window.innerHeight * 0.65;
+            const lowerMaxY = Math.max(lowerMinY, Math.min(window.innerHeight - btnHeight - 85, window.innerHeight * 0.88));
+
+            const canUseUpper = upperMaxY > upperMinY + 10;
+            const canUseLower = lowerMaxY > lowerMinY + 10;
+
+            const minDistance = Math.min(260, Math.max(150, window.innerWidth * 0.32));
 
             const isCurrentlyLeft = currX < (minX + maxX) / 2;
             const targetHalfMinX = isCurrentlyLeft ? (minX + maxX) / 2 : minX;
             const targetHalfMaxX = isCurrentlyLeft ? maxX : (minX + maxX) / 2;
 
             let bestX = minX;
-            let bestY = minY;
+            let bestY = upperMinY;
             let bestDist = -1;
+            let foundNonColliding = false;
 
-            for (let i = 0; i < 25; i++) {
-                const pickOpposite = i < 18;
+            for (let i = 0; i < 40; i++) {
+                const pickOpposite = i < 28;
                 const xRangeMin = pickOpposite ? targetHalfMinX : minX;
                 const xRangeMax = pickOpposite ? targetHalfMaxX : maxX;
-
                 const candX = Math.floor(Math.random() * (xRangeMax - xRangeMin + 1)) + xRangeMin;
-                const candY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
+
+                let candY = upperMinY;
+                if (canUseUpper && canUseLower) {
+                    candY = Math.random() > 0.5
+                        ? Math.floor(Math.random() * (upperMaxY - upperMinY + 1)) + upperMinY
+                        : Math.floor(Math.random() * (lowerMaxY - lowerMinY + 1)) + lowerMinY;
+                } else if (canUseUpper) {
+                    candY = Math.floor(Math.random() * (upperMaxY - upperMinY + 1)) + upperMinY;
+                } else if (canUseLower) {
+                    candY = Math.floor(Math.random() * (lowerMaxY - lowerMinY + 1)) + lowerMinY;
+                }
+
+                // Strictly reject overlap with the Yes button
+                if (collidesWithYes(candX, candY)) {
+                    continue;
+                }
+
                 const dist = Math.hypot(candX - currX, candY - currY);
 
                 if (dist >= minDistance) {
                     bestX = candX;
                     bestY = candY;
                     bestDist = dist;
+                    foundNonColliding = true;
                     break;
                 }
 
-                if (dist > bestDist) {
+                if (!foundNonColliding || dist > bestDist) {
                     bestDist = dist;
                     bestX = candX;
                     bestY = candY;
+                    foundNonColliding = true;
                 }
             }
 
-            // Switch class to high-contrast evasive styling with outline
+            if (!foundNonColliding) {
+                bestX = isCurrentlyLeft ? maxX : minX;
+                bestY = canUseUpper ? upperMinY : (canUseLower ? lowerMinY : 20);
+            }
+
+            // Switch class to high-contrast evasive styling
             btn.classList.remove('no-btn-colored');
             btn.classList.add('no-btn-evasive');
 
@@ -338,6 +395,7 @@
         function nextPage(num) {
             noClicks = 0;
             toastIndex = 0;
+            currentPageNum = num;
             resetBtnState('no1');
             resetBtnState('no2');
 
